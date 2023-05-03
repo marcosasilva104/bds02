@@ -1,5 +1,7 @@
 package com.devsuperior.bds02.services;
 
+import java.util.Optional;
+
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,13 @@ public class EventService {
 
 	@Autowired
 	private EventRepository repository;
-	
+
+	@Transactional(readOnly = true)
+	public EventDTO findById(Long id) {
+		Optional<Event> obj = repository.findById(id);
+		Event entity = obj.orElseThrow(() -> new ResourceNotFoundException("Entity not found"));
+		return new EventDTO(entity);
+	}
 
 	@Transactional
 	public EventDTO update(Long id, EventDTO dto) {
@@ -29,12 +37,11 @@ public class EventService {
 			entity.setCity(new City(dto.getCityId(), null));
 			entity = repository.save(entity);
 			return new EventDTO(entity);
-		}
-		catch (EntityNotFoundException e) {
+		} catch (EntityNotFoundException e) {
 			throw new ResourceNotFoundException("Id not found " + id);
 		}
 	}
-	
+
 	@Transactional
 	public EventDTO insert(EventDTO dto) {
 		Event entity = new Event();
@@ -45,4 +52,5 @@ public class EventService {
 		entity = repository.save(entity);
 		return new EventDTO(entity);
 	}
+
 }
